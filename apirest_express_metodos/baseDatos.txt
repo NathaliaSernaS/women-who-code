@@ -1,0 +1,1 @@
+[{"id":"1","descripcion":"casio","precio":300,"cantidad":30,"categoria":"nuevo"}]
