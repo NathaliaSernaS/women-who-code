@@ -1,14 +1,41 @@
-const { isUtf8 } = require('buffer');
-const { log } = require('console');
+// const { isUtf8 } = require('buffer');
+// const { log } = require('console');
 const express = require('express');
 const app= express();
 app.use(express.json());
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
 const rutaBaseDatos = path.resolve(`${__dirname}/baseDatos.txt`)
-app.listen(3000, ()=>{
-    console.log("la app corre en el puerto 3000");
-})
+
+
+const esquema = Joi.object({
+    id: Joi.number().required(),
+    nombre: Joi.string().required(),
+    descripcion: Joi.string().required(),
+    precio: Joi.number().required(),
+    cantidad: Joi.number().required(),
+    categoria: Joi.string().required(),
+});
+// console.log(esquema.validate({nombre: "camara"}))
+
+
+app.use((req, res, next) =>{
+    console.log(`${req.method}
+    Solicitud recibida`);
+    if (req.method === "POST" || req.method === "PATCH" ) {
+        const validaciones = esquema.validate(req.body);
+        if(validaciones.error){
+            res.status(422).json(validaciones.error)
+        }else{
+            next();
+        }
+        
+        
+    }else{
+        next();
+    }});
+  
 
 app.get("/api/v1/products",async(req, res)=>{
     try {
@@ -73,4 +100,33 @@ app.patch("/api/v1/products/:id",async(req, res)=>{
        res.status(500).send("error no se actualizó");
        
     }
+});
+
+app.listen(3000, ()=>{
+    console.log("la app corre en el puerto 3000");
 })
+
+    
+// });
+
+// // middleware
+
+// const filePath = path.join(__dirname,`${baseDatos}.txt`),
+// data =await fs.promises.readFile(filePath, 'utf-8'),
+// arrayDeProductos = JSON.parse(data);
+
+// app.use((req, res, next) =>{
+//     console.log(`${req.method}Solicitud recibida`);
+//     next();
+// });
+
+// app.use(errorLogger);
+// app.use(errorHandler);
+
+// app.get('/', (req, res) =>{
+//     res.send('La base de datos está en línea...');
+// });
+
+// app.get('/api/v1/products', (req, res) =>{
+//     res.send(arrayDeProductos);
+// });
